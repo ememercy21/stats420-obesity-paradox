@@ -1,0 +1,30 @@
+% Preview of all report figures and tables. Compile with:
+%   cd report && pdflatex preview.tex
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+
+\begin{document}
+
+\input{dag.tex}
+
+\input{table1-cohort.tex}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{fig-decomposition.pdf}
+\caption{Decomposition of the mortality difference (BMI $>$ 25 vs.\ $\le$ 25),
+main specification, with 95\% confidence intervals.}
+\label{fig:decomposition}
+\end{figure}
+
+\input{table2-decomposition.tex}
+
+\input{table3-interactions.tex}
+
+\input{table4-sensitivity.tex}
+
+\end{document}

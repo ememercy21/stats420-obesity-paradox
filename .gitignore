@@ -1,0 +1,12 @@
+# MIMIC-IV is credentialed data: never commit it or anything derived from it
+data/*
+!data/.gitkeep
+*.fst
+*.csv
+*.csv.gz
+*.parquet
+output/*.log
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store

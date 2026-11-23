@@ -1,0 +1,50 @@
+{
+  "o2flow": {
+    "sources": {
+      "miiv": [
+        {
+          "table": "chartevents",
+          "sub_var": "itemid",
+          "ids": [223834]
+        }
+      ]
+    }
+  },
+  "o2device": {
+    "sources": {
+      "miiv": [
+        {
+          "table": "chartevents",
+          "sub_var": "itemid",
+          "val_var": "value",
+          "ids": [226732]
+        }
+      ]
+    }
+  },
+  "oxy_ind": {
+    "concepts": ["fio2", "o2flow", "o2device"],
+    "callback": "oxygen_miiv_cb",
+    "class": "rec_cncpt",
+    "target": "ts_tbl"
+  },
+  "oxy_imp": {
+    "concepts": ["oxy_ind"],
+    "callback": "oxygen_impute_miiv_cb",
+    "class": "rec_cncpt",
+    "target": "ts_tbl"
+  },
+  "bmi_omr": {
+    "target": "id_tbl",
+    "sources": {
+      "miiv": [
+        {
+          "ids": ["BMI (kg/m2)"],
+          "table": "omr",
+          "sub_var": "result_name",
+          "callback": "miiv_omr_bmi_cb"
+        }
+      ]
+    }
+  }
+}

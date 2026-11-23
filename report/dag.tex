@@ -1,0 +1,29 @@
+% DAG (Standard Fairness Model). Needs \usepackage{tikz} and
+% \usetikzlibrary{positioning,arrows.meta} in the preamble.
+% Check every arrow against your own justification before using it.
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  node distance = 1.6cm and 2.4cm,
+  var/.style = {draw, circle, minimum size = 1cm, font = \small},
+  every edge/.style = {draw, -{Stealth}, thick}
+]
+  \node[var] (X) {$X$};
+  \node[var, right = of X] (W) {$W$};
+  \node[var, right = of W] (Y) {$Y$};
+  \node[var, above = of W] (Z) {$Z$};
+
+  \path (X) edge (W)
+        (W) edge (Y)
+        (X) edge[bend right = 35] (Y)
+        (Z) edge (X)
+        (Z) edge (W)
+        (Z) edge (Y);
+  % unobserved common cause of BMI and Charlson (part of Z)
+  \path (X) edge[{Stealth}-{Stealth}, dashed, bend left = 35] (Z);
+\end{tikzpicture}
+\caption{Assumed causal model. $X$: BMI $>$ 25; $Z$: age, sex, Charlson index;
+$W$: SOFA score (first 24h); $Y$: in-hospital death. The dashed bidirected
+edge denotes an unobserved common cause of $X$ and $Z$.}
+\label{fig:dag}
+\end{figure}
