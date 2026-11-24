@@ -47,7 +47,7 @@ BMI (from the `omr` table).
 R/
   00-import.R            convert raw MIMIC-IV csv.gz files to ricu format (one-time)
   01-extract-cohort.R    build the analysis table -> data/obesity-paradox.parquet
-  02-summary.R           aggregate descriptive overview
+  02-eda.R               exploratory data analysis (missingness, group differences, plots)
   specs.R                variable roles (X, Z, W, Y) for each specification
   03-decomposition.R     TV decomposition (faircause)
   04-interactions.R      pathway interaction tests (intertest)
@@ -76,7 +76,7 @@ the repository root:
 ```bash
 MIMIC_DIR=/path/to/mimiciv-3.1 Rscript R/00-import.R
 MIMIC_DIR=/path/to/mimiciv-3.1 Rscript R/01-extract-cohort.R
-Rscript R/02-summary.R
+Rscript R/02-eda.R
 Rscript R/03-decomposition.R
 Rscript R/04-interactions.R
 Rscript R/05-sensitivity.R

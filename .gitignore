@@ -10,3 +10,5 @@ output/*.log
 .RData
 .Rproj.user/
 .DS_Store
+report/*.log
+report/*.aux

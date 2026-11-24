@@ -22,9 +22,12 @@ Sys.setenv(RICU_CONFIG_PATH = normalizePath("config"))
 source("R/ricu-helpers.R")
 suppressPackageStartupMessages({
   library(ricu)
-  options(datatable.print.nrows = 0, datatable.print.topn = 0)
   library(data.table)
 })
+# ricu tables print themselves after `:=`, which would dump patient rows into
+# the console/log. Turning printing off (and wrapping `:=` lines in
+# invisible() below) keeps the output to summary counts only.
+options(datatable.print.nrows = 0, datatable.print.topn = 0)
 source("R/ricu-compat.R")  # ricu 0.6.1 + data.table >= 1.17 fix
 
 src <- "miiv"

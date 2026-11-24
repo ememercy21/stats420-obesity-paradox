@@ -25,13 +25,19 @@ for (nm in names(specs)) {
     X = X, Z = s$Z, W = s$W, Y = Y,
     scale = "difference", nthread = 8
   )
-  r <- as.data.table(fit$results)[grepl(" x ", measure, fixed = TRUE)]
-  r[, spec := nm]
-  results[[nm]] <- r[, .(spec, interaction = measure, estimate = value, sd,
-                         p_value)]
-  print(as.data.frame(results[[nm]]), digits = 3)
+  # keep only the interaction terms (their names contain " x ")
+  r <- fit$results
+  r <- r[grepl(" x ", r$measure), ]
+  results[[nm]] <- data.frame(
+    spec = nm,
+    interaction = r$measure,
+    estimate = r$value,
+    sd = r$sd,
+    p_value = r$p_value
+  )
+  print(results[[nm]], digits = 3)
 }
 
-res <- rbindlist(results)
+res <- do.call(rbind, results)  # stack the three specs into one table
 fwrite(res, "output/interactions.csv")
 cat("\nSaved output/interactions.csv\n")

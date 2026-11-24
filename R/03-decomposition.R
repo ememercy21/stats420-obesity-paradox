@@ -32,10 +32,17 @@ for (nm in names(specs)) {
     data = as.data.frame(dat[, c(X, s$Z, s$W, Y), with = FALSE]),
     X = X, Z = s$Z, W = s$W, Y = Y, x0 = 0, x1 = 1
   )
-  m <- as.data.table(fcb$measures)[measure %in% names(component_names)]
-  m[, `:=`(spec = nm, component = component_names[measure],
-           lo = value - 1.96 * sd, hi = value + 1.96 * sd)]
-  results[[nm]] <- m[, .(spec, component, estimate = value, sd, lo, hi)]
+  # keep the four measures we report and add 95% confidence intervals
+  m <- fcb$measures
+  m <- m[m$measure %in% names(component_names), ]
+  results[[nm]] <- data.frame(
+    spec = nm,
+    component = unname(component_names[m$measure]),
+    estimate = m$value,
+    sd = m$sd,
+    lo = m$value - 1.96 * m$sd,
+    hi = m$value + 1.96 * m$sd
+  )
   print(results[[nm]], digits = 3)
 
   ggsave(file.path("output", paste0("decomposition-", nm, ".png")),
@@ -45,6 +52,6 @@ for (nm in names(specs)) {
          width = 8, height = 5)
 }
 
-res <- rbindlist(results)
+res <- do.call(rbind, results)  # stack the three specs into one table
 fwrite(res, "output/decomposition.csv")
 cat("\nSaved output/decomposition.csv and output/decomposition-*.png\n")

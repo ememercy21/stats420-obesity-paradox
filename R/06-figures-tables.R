@@ -10,7 +10,7 @@ library(knitr)
 dir.create("report", showWarnings = FALSE)
 dat <- as.data.table(arrow::read_parquet("data/obesity-paradox.parquet"))
 
-pct <- function(x, d = 1) sprintf(paste0("%.", d, "f\\%%"), 100 * x)
+pct <- function(x) paste0(sprintf("%.1f", 100 * x), "\\%")  # 0.523 -> 52.3\%
 mean_sd <- function(x) sprintf("%.1f (%.1f)", mean(x), sd(x))
 med_iqr <- function(x, d = 1) {
   x <- x[!is.na(x)]
@@ -53,15 +53,12 @@ save_tex(t1, "table1-cohort.tex",
          "Cohort characteristics by BMI group. $^a$Among stays where measured.",
          "cohort", align = "lccc")
 
-# --- Figure 2 and Table 2: decomposition ------------------------------------
-dec <- fread("output/decomposition.csv")
-labels <- c("Total variation" = "TV",
-            "Direct effect" = "x-DE",
-            "Indirect effect (reverse)" = "x-IE (rev.)",
-            "Spurious effect (reverse)" = "x-SE (rev.)")
-dec[, measure := factor(labels[component], levels = labels)]
+# --- Decomposition figure (main spec) and Table 2 ------------------------
+dec <- read.csv("output/decomposition.csv")
+labels <- c("TV", "x-DE", "x-IE (rev.)", "x-SE (rev.)")
+dec$measure <- factor(rep(labels, times = 3), levels = labels)
 
-main <- dec[spec == "main"]
+main <- dec[dec$spec == "main", ]
 p <- ggplot(main, aes(x = measure, y = 100 * estimate)) +
   geom_hline(yintercept = 0, colour = "grey50") +
   geom_col(fill = "grey70", width = 0.6) +
@@ -70,27 +67,41 @@ p <- ggplot(main, aes(x = measure, y = 100 * estimate)) +
   theme_bw(base_size = 12)
 ggsave("report/fig-decomposition.pdf", p, width = 6, height = 3.5)
 
-spec_names <- c(main = "Main (Charlson in $Z$)",
-                charlson_as_mediator = "Charlson in $W$",
-                labs_as_mediators = "Labs added to $W$")
-dec[, cell := sprintf("%.2f [%.2f, %.2f]", 100 * estimate, 100 * lo, 100 * hi)]
-t2 <- dcast(dec, measure ~ spec, value.var = "cell")
-t2 <- t2[, c("measure", names(spec_names)), with = FALSE]
-setnames(t2, c("Measure", spec_names))
+# Table 2: one column per specification. Each spec has its four rows in the
+# same order in decomposition.csv (TV, DE, IE, SE).
+dec$cell <- sprintf("%.2f [%.2f, %.2f]", 100 * dec$estimate, 100 * dec$lo,
+                    100 * dec$hi)
+t2 <- data.frame(
+  Measure = labels,
+  main = dec$cell[dec$spec == "main"],
+  charlson = dec$cell[dec$spec == "charlson_as_mediator"],
+  labs = dec$cell[dec$spec == "labs_as_mediators"]
+)
+names(t2) <- c("Measure", "Main (Charlson in $Z$)", "Charlson in $W$",
+               "Labs added to $W$")
 save_tex(t2, "table2-decomposition.tex",
          paste("Decomposition of the total variation (percentage points,",
                "95\\% CI). TV = x-DE $-$ x-IE $-$ x-SE."),
          "decomposition", align = "lccc")
 
 # --- Table 3: interaction tests ---------------------------------------------
-int <- fread("output/interactions.csv")
-int[, cell := sprintf("%.2f (%.3f)", 100 * estimate, p_value)]
-t3 <- dcast(int, interaction ~ spec, value.var = "cell")
-t3 <- t3[match(c("DE x IE", "DE x SE", "IE x SE", "TE x SE", "DE x IE x SE"),
-               interaction)]
-t3[, interaction := gsub(" x ", " $\\times$ ", interaction, fixed = TRUE)]
-t3 <- t3[, c("interaction", names(spec_names)), with = FALSE]
-setnames(t3, c("Interaction", spec_names))
+int <- read.csv("output/interactions.csv")
+int$cell <- sprintf("%.2f (%.3f)", 100 * int$estimate, int$p_value)
+rows <- c("DE x IE", "DE x SE", "IE x SE", "TE x SE", "DE x IE x SE")
+# pick one spec's results, in the row order above
+get_cells <- function(s) {
+  d <- int[int$spec == s, ]
+  d$cell[match(rows, d$interaction)]
+}
+t3 <- data.frame(
+  Interaction = c("DE $\\times$ IE", "DE $\\times$ SE", "IE $\\times$ SE",
+                  "TE $\\times$ SE", "DE $\\times$ IE $\\times$ SE"),
+  main = get_cells("main"),
+  charlson = get_cells("charlson_as_mediator"),
+  labs = get_cells("labs_as_mediators")
+)
+names(t3) <- c("Interaction", "Main (Charlson in $Z$)", "Charlson in $W$",
+               "Labs added to $W$")
 save_tex(t3, "table3-interactions.tex",
          "Tests of pathway interactions: estimate in percentage points (p-value).",
          "interactions", align = "lccc")

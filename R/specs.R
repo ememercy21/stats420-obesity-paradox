@@ -4,13 +4,12 @@
 
 dat <- as.data.table(arrow::read_parquet("data/obesity-paradox.parquet"))
 
-# Lab mediators: unmeasured values are replaced by normal reference values,
-# as in the Lecture 9 vignette. Review these choices (and how many values are
-# imputed -- see R/01-extract-cohort.R output) before relying on them.
-normal_vals <- c(lact_24 = 1, pafi_24 = 400, ast_24 = 20)
-for (v in names(normal_vals)) {
-  dat[is.na(get(v)), (v) := normal_vals[[v]]]
-}
+# Lab mediators: if a lab was not measured in the first 24h, assume it was
+# normal (same idea as the Lecture 9 vignette). About half of each lab is
+# missing, so this matters -- see the missingness counts in R/02-eda.R.
+dat[is.na(lact_24), lact_24 := 1]     # lactate, mmol/L
+dat[is.na(pafi_24), pafi_24 := 400]   # PaO2/FiO2, mmHg
+dat[is.na(ast_24), ast_24 := 20]      # AST, U/L
 
 X <- "X_bmi"
 Y <- "Y_death"
